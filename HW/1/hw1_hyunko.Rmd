@@ -1,0 +1,142 @@
+---
+title: "HW1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1
+
+```{r cars}
+library(tidyverse)
+students <- read.table("students.txt", header = TRUE)
+students
+```
+
+(a)
+```{r}
+students <- select(students, -Student)
+students
+```
+
+(b) How many students?
+```{r}
+nrow(students)
+```
+
+
+(c)
+```{r}
+nrow(students[!complete.cases(students),])
+students <- students[complete.cases(students),]
+students
+```
+
+(d) Report median values of the numeric values.
+```{r}
+students %>%
+  summarize(median_GPA = median(GPA), median_studyhrs= median(StudyHrs))
+```
+
+(e) Compare the mean, standard deviation, and median StudyHrs between female and male students. Based on these values, comment on what you can glean about time spent studying between female and male students.
+
+```{r}
+students %>%
+  group_by(Gender) %>%
+  summarize(mean(StudyHrs), sd(StudyHrs), median(StudyHrs))
+```
+
+(f) Create a new variable called PartyAnimal, which takes on the value “yes” if PartyNum the student parties a lot (more than 8 days a month), and “no” otherwise.
+```{r}
+students <- students %>% 
+  mutate(PartyAnimal = ifelse(PartyNum > 8, "yes", "no"))
+students
+```
+
+
+(g) Create a new variable called GPA.cat, which takes on the following values • “low” if GPA is less than 3.0 • “moderate” if GPA is less than 3.5 and at least 3.0 • “high” if GPA is at least 3.5
+```{r}
+students <- students %>% 
+  mutate(GPA.cat = cut(GPA, breaks = c(-Inf, 3.0, 3.5, Inf), right = FALSE,
+                                 labels = c("low", "moderate", "high")))
+students
+```
+
+
+(h) Suppose we want to focus on students who have low GPAs (below 3.0), party a lot (more than 8 days a month), and study little (less than 15 hours a week). Create a data frame that contains these students. How many such students are there?
+
+```{r}
+students %>% 
+  filter((GPA < 3.0) & (StudyHrs < 15) & (PartyNum > 8))
+
+```
+
+(j) Produce a bar chart that summarizes the number of students in each level of GPA.cat. Be sure to add appropriate labels and titles so that the bar chart conveys its message clearly to the reader. Be sure to remove the bar corresponding to the missing values.
+
+```{r}
+ggplot(students, aes(x = GPA.cat)) +
+  geom_bar(xlab = "GPA levels", ylab = "Observations", title = "Number of Students Across GPA Levels", fill = "blue")
+```
+
+(k) Create a similar bar chart as you did in part 1j, but with proportions instead of counts. Be sure to remove the bar corresponding to the missing values.
+```{r}
+new_students <- students %>% 
+  group_by(GPA.cat) %>% 
+  summarize(Counts=n()) %>% 
+  mutate(Percent=Counts/nrow(students)) %>%
+  select(-Counts)
+new_students
+
+ggplot(new_students, aes(x = GPA.cat, y = Percent)) +
+  geom_bar(stat ="identity", fill = "orange")
+```
+
+(l) Produce a frequency table for the number of female and male students and the GPA category
+```{r}
+table(students$GPA.cat, students$Gender)
+```
+
+
+(m) Produce a table for the percentage of GPA category for each gender. For the percentages, round to 2 decimal places. Comment on the relationship between gender and GPA category
+
+```{r}
+x <- round(table(students$GPA.cat, students$Gender) %>% prop.table(),2)
+x
+```
+
+
+(n) Create a bar chart to explore the proportion of GPA categories for female and male students. Be sure to remove the bar corresponding to the missing values.
+```{r}
+ggplot(students,aes(x=Gender, fill=GPA.cat)) + 
+  geom_bar(position = "fill")
+```
+
+
+(o) Create a similar bar chart similar to the bar chart in part 1n, but split by smoking status. Comment on this bar chart.
+```{r}
+ggplot(students,aes(x=Gender, fill=Smoke)) + 
+  geom_bar(position = "fill")
+```
+
+
+(p) Create a scatterplot of GPA against the amount of hours spent studying a week. How would you describe the relationship between GPA and amount of time spent studying?
+```{r}
+ggplot(students, aes(x= GPA.cat, y = StudyHrs)) +
+  geom_point()
+```
+
+q) Edit the scatterplot from part 1p to include information about the number of days the student parties in a month.
+```{r}
+ggplot(students, aes(x= GPA.cat, y = StudyHrs, size = PartyNum)) +
+  geom_point()
+```
+
+(r) Edit the scatterplot from part 1q to include information about whether the student smokes or not.
+
+```{r}
+ggplot(students, aes(x= GPA.cat, y = StudyHrs, size = PartyNum, color = Smoke)) +
+  geom_point()
+```
+
