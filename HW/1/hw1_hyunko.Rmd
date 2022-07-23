@@ -139,4 +139,392 @@ ggplot(students, aes(x= GPA.cat, y = StudyHrs, size = PartyNum)) +
 ggplot(students, aes(x= GPA.cat, y = StudyHrs, size = PartyNum, color = Smoke)) +
   geom_point()
 ```
+## 2
+
+```{r}
+covid <- read.csv('UScovid.csv')
+```
+
+(a) We are interested in the data on June 3 2021. Create a data frame called latest that: • has only rows pertaining to data from June 3 2021, • removes rows pertaining to counties that are “Unknown”, • removes the column date and fips, • is ordered by county and then state alphabetically Use the head() function to display the first 6 rows of the data frame latest
+
+
+```{r}
+new_covid <- covid %>% filter(date == '2021-06-03') %>% filter(county != 'Unknown') %>% select(-date, -fips) %>%
+  arrange(county, state)
+head(new_covid, 6)
+```
+
+(b) Calculate the case fatality rate (number of deaths divided by number of cases, and call it death.rate) for each county. Report the case fatality rate as a percent and round to two decimal places. Add death.rate as a new column to the data frame latest. Display the first 6 rows of the data frame latest
+
+```{r}
+new_covid <- new_covid %>% mutate(death.rate = deaths / cases)
+head(new_covid, 6)
+```
+
+(c) Display the counties with the 10 largest number of cases. Be sure to also display the number of deaths and case fatality rates in these counties, as well as the state the counties belong to.
+
+```{r}
+head(new_covid %>% arrange(desc(cases)), 10)
+```
+
+(d) Display the counties with the 10 largest number of deaths. Be sure to also display the number of cases and case fatality rates in these counties, as well as the state the counties belong to.
+
+```{r}
+head(new_covid %>% arrange(desc(deaths)),10)
+```
+
+(e) Display the counties with the 10 highest case fatality rates. Be sure to also display the number of cases and deaths in these counties, as well as the state the counties belong to. Is there sometime you notice about these counties?
+```{r}
+head(new_covid %>% arrange(desc(death.rate)),10)
+```
+
+(f) Display the counties with the 10 highest case fatality rates among counties with at least 100,000 cases. Be sure to also display the number of cases and deaths in these counties, as well as the state the counties belong to.
+
+```{r}
+head(new_covid %>% filter(cases > 100000) %>% arrange(desc(cases)), 10)
+```
+
+(g) Display the number of cases, deaths, and case fatality rates for the following counties: i. Albemarle, Virginia ii. Charlottesville city, Virginia
+
+```{r}
+new_covid %>% filter(county == "Albemarle" | county == "Charlottesville city")
+```
+
+
+
+## 3
+
+(a) We are interested in the data on June 3 2021. Create a data frame called state.level that: • has 55 rows: 1 for each state, DC, and territory • has 3 columns: name of the state, number of cases, number of deaths • is ordered alphabetically by name of the state Display the first 6 rows of the data frame state.level.
+
+```{r}
+state.level <- covid %>% filter(date == '2021-06-03') %>% 
+  group_by(state) %>% 
+  summarize(tot_cases = sum(cases),tot_deaths = sum(deaths))
+
+head(state.level, 6)
+```
+
+(b) Calculate the case fatality rate (call it state.rate) for each state. Report the case fatality rate as a percent and round to two decimal places. Add state.rate as a new column to the data frame state.level. Display the first 6 rows of the data frame state.level.
+
+```{r}
+state.level <- state.level %>%
+  mutate(state.rate = tot_deaths / tot_cases)
+state.level
+```
+
+(c) What is the case fatality rate in Virginia?
+
+** A fatality rate of Virginia is 0.01659071. **
+```{r}
+state.level %>% filter(state == 'Virginia')
+```
+
+(d) What is the case fatality rate in Puerto Rico?
+
+** As we do not have info on total deaths of Puerto Rico, so we also do not know about fatality rate. **
+
+```{r}
+state.level %>% filter(state == 'Puerto Rico')
+```
+
+(e) Which states have the 10 highest case fatality rates?
+
+** New Jersey, Massachusetts, New York, Conneticut, DC, Mississippi, Pennsylvania, Louisiana, New Mexico, Maryland**
+
+```{r}
+head(state.level %>% arrange(desc(state.rate)), 10)
+```
+
+(f) Which states have the 10 lowest case fatality rates?
+
+** Alaska, Utah, Virgin Islands, Vermont, Nebraska, Idaho, Northern Marina Islands, Wisconsin, Wyoming, Colorado**
+```{r}
+head(state.level %>% arrange(state.rate), 10)
+```
+
+(g) There is a dataset on Collab, called State_pop_election.csv. The dataset contains the population of the states from the 2020 census (50 states plus DC and Puerto Rico), as well as whether the state voted for Biden or Trump in the 2020 presidential elections. Merge State_pop_election.csv and the data frame state.level. Use the head() function to display the first 6 rows after merging these two datasets. Be sure to arrange the states alphabetically.
+
+```{r}
+state_pop_election <- read.csv('State_pop_election.csv')
+names(state_pop_election)[1] <- "state"
+state_pop_election
+state.level
+
+total_df <- full_join(state_pop_election, state.level, by = "state") %>% arrange(state)
+head(total_df, 6)
+```
+
+(h) Pick at least two variables from the dataset and create a suitable visualization of the variables. Comment on what the visualization reveals. You may create new variables based on existing variables, and decribe how you created the new variables.
+
+** The plot shows that both total cases and total deaths are not relevant with election results.**
+
+```{r}
+total_df <- total_df[complete.cases(total_df),]
+
+ggplot(total_df, aes(x = tot_cases, y = tot_deaths, color = Election)) +
+  geom_point()
+```
+
+
+
+
+
+
+
+
+## 4. We will look at a data set concerning adult penguins near Palmer station, Antarctica. The data set, penguins comes from the palmerpenguins package. Be sure to install and load the palmerpenguins package. I recommend reading the documentation of this data set by typing ?penguins We will explore the relationship between the response variable body mass (in grams), body_mass_g, and the predictor length of the flippers (in mm), flipper_length_mm.
+```{r}
+#install.packages("palmerpenguins")
+```
+
+```{r}
+library(palmerpenguins)
+penguins
+```
+
+
+
+(a) Produce a scatterplot of the two variables. How would you describe the relationship between the two variables? Be sure to label the axes and give an appropriate title. Based on the appearance of the plot, does a simple linear regression appear reasonable for the data?
+
+There seems to be a linear relationship between flipper length and body mass.
+
+```{r}
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, xlab = "Flipper Length (in mm)", ylab = "Body Mass (in gram)", title = "A Scatterplot of Flipper Length vs Body Mass")) +
+  geom_point()
+```
+
+(b) Produce a similar scatterplot, but with different colored plots for each species. How does this scatterplot influence your answer to the previous part?
+
+There seems to be linear relationship between flipper length and body mass across all species. This scatterplot does not influence my answer to the previous part.
+
+```{r}
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
+  geom_point(xlab = "Flipper Length (in mm)", ylab = "Body Mass (in gram)", title = "A Scatterplot of Flipper Length vs Body Mass across Species")
+```
+
+(c) Regardless of your answer to the previous part, produce a scatterplot of body mass and flipper length for Gentoo penguins. Based on the appearance of the plot, does a simple linear regression appear reasonable for the data?
+
+** YES. There also seems to be a reasonable linear relationship between flipper length and body mass for Gentoo penguins. **
+
+```{r}
+gentoo <- penguins %>%
+  filter(species == "Gentoo")
+
+ggplot(gentoo, aes(x = flipper_length_mm, y = body_mass_g, xlab = "Flipper Length (in mm)", ylab = "Body Mass (in gram)", title = "A Scatterplot of Flipper Length vs Body Mass of Gentoo penguins")) +
+  geom_point()
+```
+
+d) What is the correlation between body mass and flipper length for Gentoo penguins. Interpret this correlation contextually. How reliable is this interpretation? For the rest of the questions, assume the assumptions to perform linear regression on Gentoo penguins are met.
+
+** For Gentoo penguins, the correlationship between flipper length and body mass is 0.7113053, which is pretty high. This means flipper length and body mass is in proportional relationship. **
+
+```{r}
+cor(gentoo$flipper_length_mm, gentoo$body_mass_g, use = "complete.obs")
+```
+
+(e) Use the lm() function to fit a linear regression for body mass and flipper length for Gentoo penguins. Write out the estimated linear regression equation.
+
+$\hat{y} = -6674.204 + 54.165 * x$
+
+```{r}
+result <- lm(body_mass_g ~ flipper_length_mm, data = gentoo)
+summary(result)
+```
+
+(f) Interpret the estimated slope contextually.
+
+** The slope implies flipper length is proportional to body mass.**
+
+(g) Does the estimated intercept make sense contextually?
+
+** The intercept is abnormally small.**
+
+(h) Report the value of R2 from this linear regression, and interpret its value contextually.
+
+** R2 = 0.506, which means that about 50.6% of the variation in body mass can be explained by flipper length. ** 
+
+(i) What is the estimated value for the standard deviation of the error terms for this regression model, ˆσ?
+
+$\hat{o} = 354$ ** is the estimated value for standard deviation. **
+
+
+(j) For a Gentoo penguin which has a flipper length of 220mm, what is its predicted body mass in grams?
+
+** The predicted body mass in grams is 5242.096. **
+
+```{r}
+y_hat = -6674.204 + 54.165 * 220
+y_hat
+```
+
+
+(k) Produce the ANOVA table for this linear regression. Using only this table, calculate the value of R2.
+
+** 0.5059552 **
+
+```{r}
+anova.tab <- anova(result)
+anova.tab
+
+SST <- sum(anova.tab$"Sum Sq")
+SSR <- anova.tab$"Sum Sq"[1]
+SSres <- anova.tab$"Sum Sq"[2]
+
+r_2 <- SSR / SST
+r_2
+```
+
+
+(l) What are the null and alternative hypotheses for the ANOVA F test?
+$ H_0: \beta_1 = 0$
+$ H_0: \beta_1 \neq 0$
+
+
+(m) Explain how the F statistic of 118.01 is found.
+```{r}
+f_statistic <- anova.tab$`F value`[1] 
+f_statistic
+```
+
+
+(n) Write an appropriate conclusion for the ANOVA F test for this simple linear regression model.
+
+We can use two approaches: P-Value Approach, and Critical Value Approach.
+
+- P-Value Approach: As P-value is 2.2e-16 < 0.05, so we can reject the null hypothesis.
+
+
+- Critical Value Approach: As F* (Critical Value = 8.813) < F-statistic (= 119.82), we can reject the null hypothesis.
+
+```{r}
+qf(0.975, 1, (length(gentoo) -2)) # CRITICAL VALUE
+```
+
+
+
+(o) Report the 95% confidence interval for the change in the predicted body mass (in grams) when flipper length increases by 1mm.
+
+** When flipper length increases by 1mm, the 95% confidence interval gives that the predicted body mass will increase within the range of (44.36556, 63.96528).**
+```{r}
+confint(result, level = 0.95)
+```
+
+
+(p) Are your results from parts 4n and 4o consistent? Briefly explain.
+
+** According to the result of previous question, there is 95 % chance of having B1 between (44.36556, 63.96528) and 0 is not within the interval. As a result, we can reject the null hypothesis stating that B1 = 0.**
+
+
+
+(q) Estimate the mean body mass (in grams) for Gentoo penguins with flipper lengths of 200mm. Also report the 95% confidence interval for the mean body mass (in grams) for Gentoo penguins with flipper lengths of 200mm.
+
+** Estimate mean body mass = 1 4158.88, 95% CI: (3978.164, 4339.596)**
+```{r}
+newData <- data.frame(flipper_length_mm = 200)
+
+predict(result, newData, level = 0.95, interval = "confidence")
+```
+
+
+(r) Report the 95% prediction interval for the body mass (in grams) of a Gentoo penguin with flipper length of 200mm.
+
+** (3434.919, 4882.841) **
+```{r}
+predict(result, newData, level = 0.95, interval = "prediction")
+```
+
+
+(s) A researcher hypothesizes that for Gentoo penguins, the predicted body mass increases by more than 50 g for each additional mm in flipper length. Conduct an appropriate hypothesis test. What is the null and alternative hypotheses, test statistic, and conclusion?
+
+$H_0: \beta_1 = 50$
+$H_0: \beta_1 > 50$
+
+** t-test statistic: 10.946 **
+
+** As critical value (t* = 1.943) < t-test statistic (= 10.946) and p-value (=2e-16) < 0.05, we can reject the null hypothesis that predicted body mass increases by 50g.**
+
+
+```{r}
+# test statistic = (b1 - value of parameter under null) / se(b_1)
+t_summary <- summary(result)
+t_summary
+
+critical_value <- qt(0.95, length(gentoo) - 2) # 1.94318
+critical_value
+
+t_statistic <- 10.946
+t_statistic
+
+
+critical_value < t_statistic # TRUE
+
+p_value <- 2e-16
+p_value < 0.05 # TRUE
+```
+
+
+
+## 5
+
+```{r}
+copier <- read.table('copier.txt', header = TRUE)
+head(copier, 5)
+```
+
+
+(a) What is the response variable in this analysis? What is predictor in this analysis?
+
+** Predictor = Service / Response variable = Minutes
+
+
+(b) Produce a scatterplot of the two variables. How would you describe the relationship between the number of copiers serviced and the time spent by the service person?
+
+** The time spent by the service person seems to be proportional to the time spent by the service person.**
+
+```{r}
+ggplot(copier, aes(x=Serviced, y=Minutes)) +
+  geom_point()
+```
+
+(c) What is the correlation between the total time spent by the service person and the number of copiers serviced? Interpret this correlation contextually.
+
+** According to the plot, we can find out that there seems to be a high correlation between two variables.**
+
+
+(d) Can the correlation found in part 5c be interpreted reliably? Briefly explain.
+
+** When we take a look at the plot, there seems to be a linear relationship between two variables, and according to corrleation, data, there is 0.97 correlation between two. Therefore, it is reasonable to judge that they are highly correlated. **
+
+```{r}
+cor(copier$Serviced, copier$Minutes)
+```
+
+(e) Use the lm() function to fit a linear regression for the two variables. Where are the values of ˆβ1, ˆβ0, R2, and ˆσ2 for this linear regression?
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
