@@ -1,0 +1,151 @@
+---
+title: "HW2.Q1.Ko"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+library(MASS)
+library(tidyverse)
+```
+
+```{r cars}
+head(mammals,5) 
+```
+
+## 1
+
+**(a)** According to the scatterplot, there seems to be a linear relationship between body weight and brain weight. However, by a quick glance, we can notice that most of the data points are overestimated and and variance increases as x increases, so both assumption 1 and 2 are violated.
+
+```{r}
+# DON'T HAVE TO REMOVE OUTLIERS IN THIS STAGE.
+ggplot(mammals, aes(x = body, y = brain)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Body Weight (kg)", y = "Brain Weight (kg)", title = "A Scatterplot of Body Weight vs Brain Weight")
+```
+
+**(b)** However, when we take a look at the residual plot, it violates assumption 1 (errors have mean 0), but assumption 2 (errors have constant variance) is violated as as x gets bigger, variation also gets bigger.
+
+
+```{r}
+result <- lm(brain ~ body , data= mammals)
+yhat <- result$fitted.values 
+res <- result$residuals 
+
+residual_mammals <- data.frame(mammals ,yhat,res)
+residual_mammals
+
+
+ggplot(residual_mammals ,aes(x = yhat , y = res)) + 
+  geom_point() + 
+  geom_hline(yintercept=0,color="red") + 
+  labs(x="Fittedy", y="Residuals", title="ResidualPlot")
+```
+
+**(c)** As both assumption 1 & 2 are violated from previous plot, we have to transform response first, then predictor if issue is still present. 
+
+
+**(d)** As $\lambda \neq 1$, it is preferable to choose $\lambda = 0$ for a log transformation. Therefore, we should transform response with y* = $\sqrt{y}$.
+
+```{r}
+boxcox(result)
+```
+
+**(e)** Despite log transformation on response variable, there seems to be no linear relation between the response and predictor variables. However, in this plot, we can have a bit more constant variance than previous plot.
+
+```{r}
+ystar <-(mammals$brain) ** 0.5 
+Data <-data.frame(mammals, ystar)
+Data
+result.ystar <- lm(ystar ~ body, data = Data)
+result.ystar
+
+yhat2 <- result.ystar$fitted.values
+res2 <- result.ystar$residuals
+
+Data <- data.frame(mammals, yhat2, res2)
+Data
+```
+
+```{r}
+ggplot(Data, aes(x = body, y = ystar)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "Body Weight (kg)", y = "Brain ** 0.5 (kg)", title = "Body Weight vs Brain ** 0.5")
+```
+
+
+
+**(f)** The issue with constant variance has been alleviated. However, still hard to find a linear relation between the response and predictor.
+
+```{r}
+ggplot(Data ,aes(x = yhat2 , y = res2)) + 
+  geom_point() + 
+  geom_hline(yintercept=0,color="red") + 
+  labs(x="Fittedy", y="Residuals", title="ResidualPlot")
+```
+
+
+
+
+
+**(g)** After applying $x^* = sin(x)$, both assumption 1 & 2 seemse to be quite adressed.
+
+```{r}
+#xstar <- 1 / (mammals$body) 
+xstar <- sin(mammals$body)
+stars_Data <- data.frame(mammals , xstar, ystar)
+stars_Data
+
+result.stars <- lm(ystar ~ xstar, data = stars_Data)
+
+yhat3 <- result.stars$fitted.values
+res3 <- result.stars$residuals
+
+final_data <- data.frame(mammals, yhat3, res3)
+final_data
+```
+
+```{r}
+ggplot(result.stars, aes(x = xstar, y = ystar)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) + 
+  labs(x = "sin(Body)", y = "Brain ** 0.5", title = "sin(Body Weight) vs Brain ** 0.5")
+```
+
+
+**(h)** Also by looking at residual plot, assumtion 1 & 2 seems to be well-addressed.
+
+```{r}
+ggplot(final_data ,aes(x = yhat3 , y = res3)) + 
+  geom_point() + 
+  geom_hline(yintercept=0,color="red") + 
+  labs(x="Fittedy", y="Residuals", title="ResidualPlot")
+```
+
+
+**(i)** Except on lag 14, all lags' correlation are below threshold, so it is reasonable to judge that the error terms are uncorrelated.
+
+```{r}
+acf(res3, main="ACF Plot of Residuals with xstar & ystar")
+```
+
+
+
+**(j)** In this QQ-plot, the sample quantiles fall pretty close to the red line, so assumption 4, the normality of errors is met.
+
+```{r}
+qqnorm(res3) 
+qqline(res3, col="red")
+```
+
+
+
+**(k)** y∗ = 9.944 - 2.557 *sin(x), where y∗ = √ y.
+
+```{r}
+lm(ystar ~ xstar, data = stars_Data)
+```
+

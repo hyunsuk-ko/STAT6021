@@ -1,0 +1,71 @@
+---
+title: "HW2.Q1.Ko"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+library(MASS)
+library(tidyverse)
+```
+
+```{r cars}
+head(mammals,5) 
+```
+
+## 1
+
+**(a)** According to the scatterplot, there seems to be a linear relationship between body weight and brain weight. Howver, by a quick glance, we can notice that most of the data points are overestimated and and variance increases as x increases, so both assumption 1 and 2 are violated.
+
+```{r}
+ggplot(mammals, aes(x = body, y = brain)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+**(b)** However, when we take a look at the residual plot, it violates assumption 1 (errors have mean 0), but assumption 2 (errors have constant variance) is violated as as x gets bigger, variation also gets bigger.
+
+
+```{r}
+result <- lm(brain ~ body , data= mammals)
+yhat<-result$fitted.values 
+res<-result$residuals 
+
+##addtodataframe 
+residual_mammals <- data.frame(mammals ,yhat,res)
+
+
+ggplot(residual_mammals ,aes(x = yhat , y = res)) + 
+  geom_point() + 
+  geom_hline(yintercept=0,color="red") + 
+  labs(x="Fittedy", y="Residuals", title="ResidualPlot")
+```
+
+**(c)** As both assumption 1 & 2 are violated from previous plot, we have to transform response first, then predictor if issue is still present. 
+
+
+**(d)** As $\lambda \neq 1$, it is preferable to choose $\lambda = 0$ for a log transformation. Therefore, we should transform response with y* = $\sqrt{y}$.
+
+```{r}
+boxcox(result)
+```
+
+**(e)**
+
+
+
+
+
+
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
