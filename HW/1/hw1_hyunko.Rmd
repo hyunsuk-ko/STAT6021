@@ -15,19 +15,25 @@ students <- read.table("students.txt", header = TRUE)
 students
 ```
 
-(a)
+(a) Looking at the variables above, is there a variable that will definitely not be part of any meaningful analysis? If yes, which one, and remove this variable from your data frame.
+
+** Students column only contains index, so I removed it from the data.**
 ```{r}
 students <- select(students, -Student)
 students
 ```
 
 (b) How many students?
+
+** Total 249 students. ** 
 ```{r}
 nrow(students)
 ```
 
 
-(c)
+(c) How many students have a missing entry in at least one of the columns?
+
+** Total 12 missing entries in at least one of the columns. ** 
 ```{r}
 nrow(students[!complete.cases(students),])
 students <- students[complete.cases(students),]
@@ -35,12 +41,20 @@ students
 ```
 
 (d) Report median values of the numeric values.
+
+** median gpa = 3.2, median study hours = 12 ** 
 ```{r}
 students %>%
   summarize(median_GPA = median(GPA), median_studyhrs= median(StudyHrs))
 ```
 
 (e) Compare the mean, standard deviation, and median StudyHrs between female and male students. Based on these values, comment on what you can glean about time spent studying between female and male students.
+
+** Female: mean study hours = 15.26471, standard deviation of study hours = 9.062937, median study hours = 12.5	**
+** Male: mean study hours = 14.74257, standard deviation of study hours = 10.315671	, median study hours = 12.0	**
+
+** According to the result, female students tend to study a little bit more than male students, but male students have larger spread in study hours than female students.**
+
 
 ```{r}
 students %>%
@@ -49,6 +63,7 @@ students %>%
 ```
 
 (f) Create a new variable called PartyAnimal, which takes on the value “yes” if PartyNum the student parties a lot (more than 8 days a month), and “no” otherwise.
+
 ```{r}
 students <- students %>% 
   mutate(PartyAnimal = ifelse(PartyNum > 8, "yes", "no"))
@@ -57,6 +72,7 @@ students
 
 
 (g) Create a new variable called GPA.cat, which takes on the following values • “low” if GPA is less than 3.0 • “moderate” if GPA is less than 3.5 and at least 3.0 • “high” if GPA is at least 3.5
+
 ```{r}
 students <- students %>% 
   mutate(GPA.cat = cut(GPA, breaks = c(-Inf, 3.0, 3.5, Inf), right = FALSE,
@@ -67,10 +83,11 @@ students
 
 (h) Suppose we want to focus on students who have low GPAs (below 3.0), party a lot (more than 8 days a month), and study little (less than 15 hours a week). Create a data frame that contains these students. How many such students are there?
 
+** Total 29 students. **
+
 ```{r}
 students %>% 
   filter((GPA < 3.0) & (StudyHrs < 15) & (PartyNum > 8))
-
 ```
 
 (j) Produce a bar chart that summarizes the number of students in each level of GPA.cat. Be sure to add appropriate labels and titles so that the bar chart conveys its message clearly to the reader. Be sure to remove the bar corresponding to the missing values.
@@ -81,6 +98,7 @@ ggplot(students, aes(x = GPA.cat)) +
 ```
 
 (k) Create a similar bar chart as you did in part 1j, but with proportions instead of counts. Be sure to remove the bar corresponding to the missing values.
+
 ```{r}
 new_students <- students %>% 
   group_by(GPA.cat) %>% 
@@ -94,12 +112,15 @@ ggplot(new_students, aes(x = GPA.cat, y = Percent)) +
 ```
 
 (l) Produce a frequency table for the number of female and male students and the GPA category
+
 ```{r}
 table(students$GPA.cat, students$Gender)
 ```
 
 
 (m) Produce a table for the percentage of GPA category for each gender. For the percentages, round to 2 decimal places. Comment on the relationship between gender and GPA category
+
+** Except for low GPA category, female students to have moderate ~ high GPAs than male students.**
 
 ```{r}
 x <- round(table(students$GPA.cat, students$Gender) %>% prop.table(),2)
@@ -108,6 +129,7 @@ x
 
 
 (n) Create a bar chart to explore the proportion of GPA categories for female and male students. Be sure to remove the bar corresponding to the missing values.
+
 ```{r}
 ggplot(students,aes(x=Gender, fill=GPA.cat)) + 
   geom_bar(position = "fill")
@@ -115,6 +137,7 @@ ggplot(students,aes(x=Gender, fill=GPA.cat)) +
 
 
 (o) Create a similar bar chart similar to the bar chart in part 1n, but split by smoking status. Comment on this bar chart.
+
 ```{r}
 ggplot(students,aes(x=Gender, fill=Smoke)) + 
   geom_bar(position = "fill")
@@ -122,6 +145,8 @@ ggplot(students,aes(x=Gender, fill=Smoke)) +
 
 
 (p) Create a scatterplot of GPA against the amount of hours spent studying a week. How would you describe the relationship between GPA and amount of time spent studying?
+
+** The more time spent studying, the better GPA grades. ** 
 ```{r}
 ggplot(students, aes(x= GPA.cat, y = StudyHrs)) +
   geom_point()
@@ -157,7 +182,7 @@ head(new_covid, 6)
 (b) Calculate the case fatality rate (number of deaths divided by number of cases, and call it death.rate) for each county. Report the case fatality rate as a percent and round to two decimal places. Add death.rate as a new column to the data frame latest. Display the first 6 rows of the data frame latest
 
 ```{r}
-new_covid <- new_covid %>% mutate(death.rate = deaths / cases)
+new_covid <- new_covid %>% mutate(death.rate = round(100 * deaths / cases,2))
 head(new_covid, 6)
 ```
 
@@ -174,6 +199,9 @@ head(new_covid %>% arrange(desc(deaths)),10)
 ```
 
 (e) Display the counties with the 10 highest case fatality rates. Be sure to also display the number of cases and deaths in these counties, as well as the state the counties belong to. Is there sometime you notice about these counties?
+
+** Counties with lesser cases tend to have high death rates. **
+
 ```{r}
 head(new_covid %>% arrange(desc(death.rate)),10)
 ```
@@ -208,13 +236,13 @@ head(state.level, 6)
 
 ```{r}
 state.level <- state.level %>%
-  mutate(state.rate = tot_deaths / tot_cases)
+  mutate(state.rate =   round(100*tot_deaths / tot_cases, 2))
 state.level
 ```
 
 (c) What is the case fatality rate in Virginia?
 
-** A fatality rate of Virginia is 0.01659071. **
+** A fatality rate of Virginia is 1.66%	. **
 ```{r}
 state.level %>% filter(state == 'Virginia')
 ```
@@ -247,8 +275,6 @@ head(state.level %>% arrange(state.rate), 10)
 ```{r}
 state_pop_election <- read.csv('State_pop_election.csv')
 names(state_pop_election)[1] <- "state"
-state_pop_election
-state.level
 
 total_df <- full_join(state_pop_election, state.level, by = "state") %>% arrange(state)
 head(total_df, 6)
@@ -264,9 +290,6 @@ total_df <- total_df[complete.cases(total_df),]
 ggplot(total_df, aes(x = tot_cases, y = tot_deaths, color = Election)) +
   geom_point()
 ```
-
-
-
 
 
 
@@ -289,13 +312,14 @@ penguins
 There seems to be a linear relationship between flipper length and body mass.
 
 ```{r}
-ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, xlab = "Flipper Length (in mm)", ylab = "Body Mass (in gram)", title = "A Scatterplot of Flipper Length vs Body Mass")) +
-  geom_point()
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(colour = "red") +
+  labs(x = "Flipper Length (in mm)", y = "Body Mass (in gram)", title = "A Scatterplot of Flipper Length vs Body Mass")
 ```
 
 (b) Produce a similar scatterplot, but with different colored plots for each species. How does this scatterplot influence your answer to the previous part?
 
-There seems to be linear relationship between flipper length and body mass across all species. This scatterplot does not influence my answer to the previous part.
+** There seems to be linear relationship between flipper length and body mass across all species. This scatterplot does not influence my answer to the previous part. **
 
 ```{r}
 ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
@@ -333,11 +357,11 @@ summary(result)
 
 (f) Interpret the estimated slope contextually.
 
-** The slope implies flipper length is proportional to body mass.**
+** The slope implies 1mm increase of flipper length is proportional 54.165 grams of increase in body mass.**
 
 (g) Does the estimated intercept make sense contextually?
 
-** The intercept is abnormally small.**
+** The intercept is abnormally small. Body mass cannot be less than zero when flipper length is 0.**
 
 (h) Report the value of R2 from this linear regression, and interpret its value contextually.
 
@@ -391,7 +415,7 @@ f_statistic
 
 We can use two approaches: P-Value Approach, and Critical Value Approach.
 
-- P-Value Approach: As P-value is 2.2e-16 < 0.05, so we can reject the null hypothesis.
+- P-Value Approach: As P-value is 2.2e-16 * 2 < 0.05, so we can reject the null hypothesis.
 
 
 - Critical Value Approach: As F* (Critical Value = 8.813) < F-statistic (= 119.82), we can reject the null hypothesis.
@@ -399,7 +423,6 @@ We can use two approaches: P-Value Approach, and Critical Value Approach.
 ```{r}
 qf(0.975, 1, (length(gentoo) -2)) # CRITICAL VALUE
 ```
-
 
 
 (o) Report the 95% confidence interval for the change in the predicted body mass (in grams) when flipper length increases by 1mm.
@@ -418,7 +441,7 @@ confint(result, level = 0.95)
 
 (q) Estimate the mean body mass (in grams) for Gentoo penguins with flipper lengths of 200mm. Also report the 95% confidence interval for the mean body mass (in grams) for Gentoo penguins with flipper lengths of 200mm.
 
-** Estimate mean body mass = 1 4158.88, 95% CI: (3978.164, 4339.596)**
+** Estimated mean body mass = 4158.88, 95% CI: (3978.164, 4339.596)**
 ```{r}
 newData <- data.frame(flipper_length_mm = 200)
 
@@ -474,7 +497,7 @@ head(copier, 5)
 
 (a) What is the response variable in this analysis? What is predictor in this analysis?
 
-** Predictor = Service / Response variable = Minutes
+** Predictor = Service / Response variable = Minutes **
 
 
 (b) Produce a scatterplot of the two variables. How would you describe the relationship between the number of copiers serviced and the time spent by the service person?
@@ -500,11 +523,45 @@ cor(copier$Serviced, copier$Minutes)
 ```
 
 (e) Use the lm() function to fit a linear regression for the two variables. Where are the values of ˆβ1, ˆβ0, R2, and ˆσ2 for this linear regression?
+$\beta_1 = 15.0352, \beta_0 = -0.5802, R^2 = 0.9575, o^2 = 8.914$
 
 ```{r}
-
+result <- lm(copier$Minutes ~ copier$Serviced)
+summary(result)
 ```
 
+(f) Interpret the values of ˆβ1, ˆβ0 contextually. Does the value of ˆβ0 make sense in this context?
+
+** As ** $\beta_1 = 15.0352$, ** every one unit increase of copier machine will lead to an increase of 15.0352 minutes, which is plausible. However, ** $\beta_0 = -0.5802$ means using 0 copier machine leads to -0.5802 minutes spent, which is impossible in real world settings.
+
+
+(g) Use the anova() function to produce the ANOVA table for this linear regression. What is the value of the ANOVA F statistic? What null and alternative hypotheses are being tested here? What is a relevant conclusion based on this ANOVA F statistic?
+
+$H_0: \beta_1 = 0$
+$H_a: \beta_1 \neq 0$
+
+** F-statistic: 968.66**
+
+** p-value: 2.2e-16 * 2 = 4.4e-16**
+
+** According to the result, we can conclude that as p-value is less than 0.05, we can reject the null hypothesis that ** $ \beta_1 = 0$.
+
+```{r}
+anova.tab <- anova(result)
+anova.tab
+```
+
+
+(h) Suppose a service person is sent to service 5 copiers. Obtain an appropriate 95% interval that predicts the total service time spent by the service person.
+
+```{r}
+newData <- data.frame(Serviced = 5)
+
+predict(result, newData, level = 0.95, interval = "prediction")
+```
+
+
+(i) What is the value of the residual for the first observation? Interpret this value contextually.
 
 
 

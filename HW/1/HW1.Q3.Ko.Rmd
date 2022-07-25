@@ -1,0 +1,76 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+```
+
+## 3
+
+```{r}
+library(tidyverse)
+covid <- read.csv('UScovid.csv')
+```
+
+
+**(a)** 
+
+```{r}
+state.level <- covid %>% filter(date == '2021-06-03') %>% 
+  group_by(state) %>% 
+  summarize(tot_cases = sum(cases),tot_deaths = sum(deaths))
+
+head(state.level, 6)
+```
+
+**(b)** 
+
+```{r}
+state.level <- state.level %>%
+  mutate(state.rate =   round(100*tot_deaths / tot_cases, 2))
+state.level
+```
+
+**(c)** A fatality rate of Virginia is 1.66%.
+```{r}
+state.level %>% filter(state == 'Virginia')
+```
+
+**(d)** As we do not have info on total deaths of Puerto Rico, so we also do not know about fatality rate. 
+
+```{r}
+state.level %>% filter(state == 'Puerto Rico')
+```
+
+**(e)** New Jersey, Massachusetts, New York, Conneticut, DC, Mississippi, Pennsylvania, Louisiana, New Mexico, Maryland
+
+```{r}
+head(state.level %>% arrange(desc(state.rate)), 10)
+```
+
+**(f)** Alaska, Utah, Virgin Islands, Vermont, Nebraska, Idaho, Northern Marina Islands, Wisconsin, Wyoming, Colorado
+```{r}
+head(state.level %>% arrange(state.rate), 10)
+```
+
+**(g)** 
+
+```{r}
+state_pop_election <- read.csv('State_pop_election.csv')
+names(state_pop_election)[1] <- "state"
+
+total_df <- full_join(state_pop_election, state.level, by = "state") %>% arrange(state)
+head(total_df, 6)
+```
+
+**(h)** The plot shows that both total cases and total deaths are not relevant with election results.
+
+```{r}
+total_df <- total_df[complete.cases(total_df),]
+
+ggplot(total_df, aes(x = tot_cases, y = tot_deaths, color = Election)) +
+  geom_point()
+```

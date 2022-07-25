@@ -1,0 +1,82 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+```
+
+## 5
+
+```{r}
+library(tidyverse)
+copier <- read.table('copier.txt', header = TRUE)
+head(copier, 5)
+```
+
+
+**(a)** Predictor = Service / Response variable = Minutes 
+
+
+**(b)** The time spent by the service person seems to be proportional to the time spent by the service person.
+
+```{r}
+ggplot(copier, aes(x=Serviced, y=Minutes)) +
+  geom_point()
+```
+
+**(c)** According to the plot, we can find out that there seems to be a high correlation between two variables.
+
+
+**(d)** When we take a look at the plot, there seems to be a linear relationship between two variables, and according to corrleation, data, there is 0.978517 correlation between two. Therefore, it is reasonable to judge that they are highly correlated. 
+
+```{r}
+cor(copier$Serviced, copier$Minutes)
+```
+
+**(e)** $\beta_1 = 15.0352, \beta_0 = -0.5802, R^2 = 0.9575, o^2 = 8.914$
+
+```{r}
+copier_result <- lm(Minutes ~ Serviced, data = copier)
+summary(copier_result)
+```
+
+**(f)**  As $\beta_1 = 15.0352$, every one unit increase of copier machine will lead to an increase of 15.0352 minutes, which is plausible. However, $\beta_0 = -0.5802$ means using 0 copier machine leads to -0.5802 minutes spent, which is impossible in real world settings.
+
+
+**(g)** $H_0: \beta_1 = 0$, $H_a: \beta_1 \neq 0$
+
+- F-statistic: 968.66
+
+- p-value: 2.2e-16 * 2 = 4.4e-16**
+
+- According to the result, we can conclude that as p-value is less than 0.05, we can reject the null hypothesis that $ \beta_1 = 0$.
+
+```{r}
+copier_anova <- anova(copier_result)
+copier_anova
+```
+
+
+**(h)** 5 copiers 95% CI: (56.42133, 92.77084)
+
+```{r}
+copier_data <- data.frame(Serviced = 5)
+
+predict(copier_result, copier_data, level = 0.95, interval = "prediction")
+```
+
+
+
+**(i)** Residual, which is equivalent to error between  $y_1, \hat{y}_1$ ** is -9.4902.
+
+
+```{r}
+y_1 <- copier[1,1]
+yhat_1 <- 15.0352 * 2 - 0.5802
+
+residual_1 <- y_1 - yhat_1
+residual_1
+```

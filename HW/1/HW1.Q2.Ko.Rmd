@@ -1,0 +1,61 @@
+---
+title: "HW1.Q2.Ko"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+```
+
+## 2
+
+```{r}
+library(tidyverse)
+covid <- read.csv('UScovid.csv')
+```
+
+**(a)** 
+
+```{r}
+new_covid <- covid %>% filter(date == '2021-06-03') %>% filter(county != 'Unknown') %>% select(-date, -fips) %>%
+  arrange(county, state)
+head(new_covid, 6)
+```
+
+**(b)** 
+
+```{r}
+new_covid <- new_covid %>% mutate(death.rate = round(100 * deaths / cases,2))
+head(new_covid, 6)
+```
+
+**(c)** 
+
+```{r}
+head(new_covid %>% arrange(desc(cases)), 10)
+```
+
+**(d)** 
+
+```{r}
+head(new_covid %>% arrange(desc(deaths)),10)
+```
+
+**(e)** Counties with lesser cases tend to have high death rates. 
+
+```{r}
+head(new_covid %>% arrange(desc(death.rate)),10)
+```
+
+**(f)** 
+
+```{r}
+head(new_covid %>% filter(cases > 100000) %>% arrange(desc(cases)), 10)
+```
+
+**(g)**
+
+```{r}
+new_covid %>% filter(county == "Albemarle" | county == "Charlottesville city")
+```

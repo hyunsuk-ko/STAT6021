@@ -1,0 +1,158 @@
+---
+title: "HW1.Q4.Ko"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+```
+
+## 4. 
+
+```{r}
+library(tidyverse)
+library(palmerpenguins)
+head(penguins,5)
+```
+
+
+
+**(a)** There seems to be a linear relationship between flipper length and body mass.
+
+```{r}
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(colour = "red") +
+  labs(x = "Flipper Length (in mm)", y = "Body Mass (in gram)", title = "A Scatterplot of Flipper Length vs Body Mass")
+```
+
+**(b)** There seems to be linear relationship between flipper length and body mass across all species. This scatterplot does not influence my answer to the previous part. 
+
+```{r}
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
+  geom_point(xlab = "Flipper Length (in mm)", ylab = "Body Mass (in gram)", title = "A Scatterplot of Flipper Length vs Body Mass across Species")
+```
+
+**(c)** YES. There also seems to be a reasonable linear relationship between flipper length and body mass for Gentoo penguins. 
+
+```{r}
+gentoo <- penguins %>%
+  filter(species == "Gentoo")
+
+ggplot(gentoo, aes(x = flipper_length_mm, y = body_mass_g, xlab = "Flipper Length (in mm)", ylab = "Body Mass (in gram)", title = "A Scatterplot of Flipper Length vs Body Mass of Gentoo penguins")) +
+  geom_point()
+```
+
+**(d)** For Gentoo penguins, the correlationship between flipper length and body mass is 0.7026665, which is pretty high. This means flipper length and body mass is in proportional relationship. 
+
+```{r}
+cor(gentoo$flipper_length_mm, gentoo$body_mass_g, use = "complete.obs")
+```
+
+**(e)** $\hat{y} = -6787.281 + 54.623 * x$
+
+```{r}
+gentoo_result <- lm(body_mass_g ~ flipper_length_mm, data = gentoo)
+summary(gentoo_result)
+```
+
+**(f)** The slope implies 1mm increase of flipper length is proportional 54.623 grams of increase in body mass.
+
+**(g)** The intercept is abnormally small. Body mass cannot be less than zero when flipper length is 0.
+
+**(h)**  R2 = 0.4937, which means that about 49.37% of the variation in body mass can be explained by flipper length. 
+
+**(i)** $\hat{o} = 360.2$  is the estimated value for standard deviation. 
+
+
+**(j)** The predicted body mass in grams is 5229.779. 
+
+```{r}
+y_hat = -6787.281 + 54.623 * 220
+y_hat
+```
+
+
+**(k)**  0.4937402 
+
+```{r}
+gentoo.anova.tab <- anova(gentoo_result)
+gentoo.anova.tab
+
+SST <- sum(gentoo.anova.tab$"Sum Sq")
+SSR <- gentoo.anova.tab$"Sum Sq"[1]
+SSres <- gentoo.anova.tab$"Sum Sq"[2]
+
+r_2 <- SSR / SST
+r_2
+```
+
+
+**(l)** $ H_0: \beta_1 = 0$, $ H_a: \beta_1 \neq 0$
+
+
+**(m)** We can derive f statistic from anova table.
+
+```{r}
+f_statistic <- gentoo.anova.tab$`F value`[1] 
+round(f_statistic, 2)
+```
+
+
+**(n)** We can use two approaches: P-Value Approach, and Critical Value Approach.
+
+- P-Value Approach: As P-value is 2.2e-16 * 2 < 0.05, so we can reject the null hypothesis.
+
+
+- Critical Value Approach: As F* (Critical Value = 5.150187) < F-statistic (= 118.01), we can reject the null hypothesis.
+
+```{r}
+qf(0.975, 1, (nrow(gentoo) -2)) # CRITICAL VALUE
+```
+
+
+**(o)**  When flipper length increases by 1mm, the 95% confidence interval gives that the predicted body mass will increase within the range of (44.66777,    64.57724).
+```{r}
+confint(gentoo_result, level = 0.95)
+```
+
+
+**(p)** According to the result of previous question, there is 95 % chance of having B1 between (44.66777, 64.57724) and 0 is not within the interval. As a result, we can reject the null hypothesis stating that B1 = 0.
+
+
+
+**(q)** Estimated mean body mass = 4137.22, 95% CI: (3954.446, 4319.993)
+```{r}
+gentooData <- data.frame(flipper_length_mm = 200)
+
+predict(gentoo_result, gentooData, level = 0.95, interval = "confidence")
+```
+
+
+**(r)** (3401.121, 4873.319)
+```{r}
+predict(gentoo_result, gentooData, level = 0.95, interval = "prediction")
+```
+
+
+**(s)** $H_0: \beta_1 = 50$, $H_a: \beta_1 > 50$
+
+- t-test statistic: 0.9194511, critical value: 1.657439 **
+
+- As critical value > t-statistic, we cannot reject the null hypothesis  that predicted body mass increases by 50g. **
+
+- As p-value (=0.179837) > 0.05, we cannot reject the null hypothesis that predicted body mass increases by 50g.**
+
+- Therefore, from two approaches, we cannot identically reject the null hypothesis.**
+
+
+```{r}
+critical_value <- qt(0.95, nrow(gentoo) - 2) # ONE-SIDED TEST
+critical_value
+
+t_statistic <- (54.623 - 50) / 5.028
+t_statistic
+
+p_value <- 1 - pt(t_statistic, nrow(gentoo) - 2)
+p_value
+```

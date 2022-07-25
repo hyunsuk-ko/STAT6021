@@ -1,0 +1,165 @@
+---
+title: "HW1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+```
+
+## 1
+
+```{r cars}
+library(tidyverse)
+students <- read.table("students.txt", header = TRUE)
+head(students, 5)
+```
+
+**(a)** Students column only contains index, so I removed it from the data.
+```{r}
+students <- select(students, -Student)
+head(students,5)
+```
+
+**(b)**  Total 249 students.
+```{r}
+nrow(students)
+```
+
+
+**(c)** Total 12 missing entries in at least one of the columns.
+
+```{r}
+nrow(students[!complete.cases(students),])
+students <- students[complete.cases(students),]
+head(students,5)
+```
+
+**(d)** median gpa = 3.2, median study hours = 12
+
+```{r}
+students %>%
+  summarize(median_GPA = median(GPA), median_studyhrs= median(StudyHrs))
+```
+
+**(e)** Female: mean study hours = 15.26471, standard deviation of study hours = 9.062937, median study hours = 12.5	
+ Male: mean study hours = 14.74257, standard deviation of study hours = 10.315671	, median study hours = 12.0	 
+ According to the result, female students tend to study a little bit more than male students, but male students have larger spread in study hours than female students.
+
+
+```{r}
+students %>%
+  group_by(Gender) %>%
+  summarize(mean(StudyHrs), sd(StudyHrs), median(StudyHrs))
+```
+
+**(f)** 
+
+```{r}
+students <- students %>% 
+  mutate(PartyAnimal = ifelse(PartyNum > 8, "yes", "no"))
+head(students,5)
+```
+
+
+**(g)** 
+
+```{r}
+students <- students %>% 
+  mutate(GPA.cat = cut(GPA, breaks = c(-Inf, 3.0, 3.5, Inf), right = FALSE,
+                                 labels = c("low", "moderate", "high")))
+head(students,5)
+```
+
+
+**(h)** Total 29 students. 
+
+```{r}
+head(students %>% filter((GPA < 3.0) & (StudyHrs < 15) & (PartyNum > 8)),5)
+```
+
+**(i)** Low: 86, Moderate: 84, High: 67
+
+```{r}
+table(students$GPA.cat)
+```
+
+
+**(j)** 
+
+```{r}
+ggplot(students, aes(x = GPA.cat)) +
+  geom_bar(xlab = "GPA levels", ylab = "Observations", title = "Number of Students Across GPA Levels", fill = "blue") +
+  labs(title = "The number of students across GPA Categories")
+```
+
+**(k)** 
+
+```{r}
+new_students <- students %>% 
+  group_by(GPA.cat) %>% 
+  summarize(Counts=n()) %>% 
+  mutate(Percent=Counts/nrow(students)) %>%
+  select(-Counts)
+new_students
+
+ggplot(new_students, aes(x = GPA.cat, y = Percent)) +
+  geom_bar(stat ="identity", fill = "orange") +
+  labs(title = "Percentage of Students Across GPA Categories")
+```
+
+**(l)** 
+```{r}
+table(students$GPA.cat, students$Gender)
+```
+
+
+**(m)** Except for low GPA category, female students to have moderate ~ high GPAs than male students.
+
+```{r}
+round(table(students$GPA.cat, students$Gender) %>% prop.table(),2)
+```
+
+
+**(n)**
+
+```{r}
+ggplot(students,aes(x=Gender, fill=GPA.cat)) + 
+  geom_bar(position = "fill") + 
+  labs(title = "Proportion of GPA Categories of All Sex")
+```
+
+
+**(o)** The majority of both female and male students were non-smokers.
+
+```{r}
+ggplot(students,aes(x=Gender, fill=Smoke)) + 
+  geom_bar(position = "fill") +
+  labs(title = "Proportion of Smokers in All Sex")
+```
+
+
+**(p)** The more time spent studying, the better GPA grades.
+```{r}
+ggplot(students, aes(x= GPA.cat, y = StudyHrs)) +
+  geom_point() +
+  labs(title = "Number of Studying Hours Across GPA Categories")
+```
+
+**(q)** 
+
+```{r}
+ggplot(students, aes(x= GPA.cat, y = StudyHrs, size = PartyNum)) +
+  geom_point() +
+  labs(title = "Number of Studying Hours and Party Numbers Across GPA Categories")
+```
+
+**(r)**
+
+```{r}
+ggplot(students, aes(x= GPA.cat, y = StudyHrs, size = PartyNum, color = Smoke)) +
+  geom_point() +
+  labs(title = "Number of Studying Hours Across GPA Categories and Smoking Status")
+
+```
