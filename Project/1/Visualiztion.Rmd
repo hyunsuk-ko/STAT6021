@@ -1,0 +1,149 @@
+---
+title: "Visualization"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(dplyr)
+```
+
+
+
+```{r cars}
+options(scipen = 100, digits = 2) # NO e
+diamonds <- read.csv("diamonds4.csv")
+head(diamonds, 5)
+```
+
+```{r}
+sum(is.na(diamonds))
+```
+
+```{r}
+diamonds <-diamonds %>% mutate(clarity_group = case_when(
+  clarity == "FL" ~ 1,
+  clarity == "IF" ~ 2,
+  clarity == "VVS1" | clarity == "VVS2" ~ 3,
+  clarity == "VS1" | clarity == "VS2" ~ 4,
+  clarity == "SI1" | clarity == "SI2" ~ 5,
+  clarity == "I1" | clarity == "I2" | clarity == "I3" ~ 6))
+
+diamonds <- diamonds %>% mutate(color_group = case_when(
+  color == "D" | color == "E" | color == "F" ~ "Colorless",
+  color == "G" | color == "H" | color == "I" | color == "J" ~ "Near-Colorless",
+  color == "K" ~ "Faint Color"))
+
+diamonds <- diamonds %>% mutate(cut_group = case_when(
+  cut == "Astor Ideal" ~ 1,
+  cut == "Ideal" ~ 2,
+  cut == "Very Good" ~ 3,
+  cut == "Good" ~ 4,
+  ))
+
+diamonds
+```
+
+
+## Relationship between carat and price
+
+: Price is proportional to carat.
+```{r}
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_point()
+```
+
+
+
+
+## Overal spread of clarity
+: Clearer -> higher the price. / FL: Extremely high mean, but moderate median price.
+```{r}
+clarity_data <-diamonds %>% group_by(clarity) %>% 
+  summarize(mean_price = mean(price), median_price = median(price))
+  
+clarity_data
+
+
+diamonds$clarity <- factor(diamonds$clarity , levels=c("FL","IF","VVS1","VVS2", "VS1", "VS2", "SI1", "SI2", "I1", "I2", "I3"))
+
+ggplot(diamonds, aes(x= clarity, y = price, fill = clarity_group)) +
+  geom_boxplot()
+
+ggplot(diamonds, aes(x= clarity, y = price, fill = clarity_group)) +
+  geom_violin()
+
+ggplot(diamonds, aes(x= clarity, y = price, colour = carat)) +
+  geom_point()
+
+ggplot(diamonds, aes(x= clarity_group, y = price, colour = carat)) +
+  geom_point()
+```
+
+
+## Overal spread of color
+: Median values of each color were almost the same, but the most expensive diamond was translucent.
+
+```{r}
+color_data <-diamonds %>% group_by(color) %>% 
+  summarize(mean_price = mean(price), median_price = median(price))
+  
+color_data
+
+diamonds$color <- factor(diamonds$color , levels=c("Astor Ideal", "Ideal", "Very Good", "Good"))
+
+ggplot(diamonds, aes(x= color, y = price, fill = color_group)) +
+  geom_boxplot()
+
+ggplot(diamonds, aes(x= color, y = price, fill = color_group)) +
+  geom_violin()
+
+ggplot(diamonds, aes(x= color, y = price, colour = carat)) +
+  geom_point(stat="identity")
+
+ggplot(diamonds, aes(x= color_group, y = price, colour = carat)) +
+  geom_point(stat="identity")
+```
+
+
+## Overal spread of cut
+: Cut was not necessarily determining factor of the price.
+```{r}
+cut_data <- diamonds %>% group_by(cut) %>% 
+  summarize(mean_price = mean(price), median_price = median(price))
+  
+cut_data
+
+diamonds$cut <- factor(diamonds$cut , levels=c("Astor Ideal", "Ideal", "Very Good", "Good"))
+
+ggplot(diamonds, aes(x= cut, y = price)) +
+  geom_boxplot()
+
+ggplot(diamonds, aes(x= cut, y = price, fill = cut_group)) +
+  geom_violin()
+
+ggplot(diamonds, aes(x= cut, y = price, colour = carat)) +
+  geom_point()
+```
+
+
+```{r}
+hist(diamonds$carat)
+hist(diamonds$clarity_group)
+hist(diamonds$color_group)
+hist(diamonds$cut_group)
+hist(diamonds$price)
+```
+
+
+
+
+
+
+
+
+
+
+

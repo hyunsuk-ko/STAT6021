@@ -1,0 +1,25 @@
+---
+title: "HW2.Q2.Ko"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+```
+
+```{r cars}
+install.packages("faraway")
+```
+
+```{r}
+library(MASS)
+library(tidyverse)
+library(faraway)
+```
+
+
+## 2
+
+
+

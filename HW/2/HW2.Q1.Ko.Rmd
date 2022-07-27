@@ -44,6 +44,7 @@ ggplot(residual_mammals ,aes(x = yhat , y = res)) +
   labs(x="Fittedy", y="Residuals", title="ResidualPlot")
 ```
 
+
 **(c)** As both assumption 1 & 2 are violated from previous plot, we have to transform response first, then predictor if issue is still present. 
 
 
@@ -95,7 +96,8 @@ ggplot(Data ,aes(x = yhat2 , y = res2)) +
 
 ```{r}
 #xstar <- 1 / (mammals$body) 
-xstar <- sin(mammals$body)
+#xstar <- sin(mammals$body)
+xstar <- log(mammals$body)
 stars_Data <- data.frame(mammals , xstar, ystar)
 stars_Data
 
@@ -112,7 +114,7 @@ final_data
 ggplot(result.stars, aes(x = xstar, y = ystar)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) + 
-  labs(x = "sin(Body)", y = "Brain ** 0.5", title = "sin(Body Weight) vs Brain ** 0.5")
+  labs(x = "log(Body)", y = "Brain ** 0.5", title = "sin(Body Weight) vs Brain ** 0.5")
 ```
 
 
@@ -143,7 +145,7 @@ qqline(res3, col="red")
 
 
 
-**(k)** y∗ = 9.944 - 2.557 *sin(x), where y∗ = √ y.
+**(k)** y∗ = 5.191 - 3.397 * log(x), where y∗ = √ y.
 
 ```{r}
 lm(ystar ~ xstar, data = stars_Data)
