@@ -1,0 +1,94 @@
+---
+title: "HW2.Q3.Ko"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+library(MASS)
+library(tidyverse)
+```
+
+## 3
+
+```{r cars}
+nfl <- read.table('nfl.txt', header = TRUE)
+head(nfl)
+```
+
+**(a)** y (Games won) = - 7.29 + 0.9998 * x1 (Rushing yards) + 0.004 * x2 (passing yards) + 0.122 * x3 (punting average) + 0.032 * x4 (fg pct) + 0.00001 * x5 (turnover differential) + 0.0016 * x6 (penalty yards) + 0.154 * x7 (% rushing) - 0.0039 * x8 (opponent's rushing yards) - 0.0017906 * x9 (opponent's passing yards)
+
+```{r}
+result <- lm(y ~ ., data = nfl)
+summary(result)
+```
+
+**(b)** When a team's rushing percent increases by 1, then their number of games won will increase by 0.1543533 when all of the remaining regressor variables constant.
+
+
+**(c)** The estimated number of this team would win is 3.381 and 95% CI is (-0.5164, 7.729).
+
+```{r}
+partial_result <- lm(y ~ x2+x7+x8, data = nfl)
+newdata <- data.frame(x2 = 2000, x7 = 48, x8 = 2350) 
+predict(partial_result, newdata, level=0.95, interval="prediction")
+```
+
+
+**(d)** $H_0: \beta_1 = \beta_2 = ... = \beta_9 = 0$, $H_a: $ at least one of the $\beta_j \neq 0, for j = 1, ..., 9$
+
+- F statistic: 8.85
+
+- p-value: 0.000053
+
+Therefore, with small p-value, we can reject the null hypothesis and conclude that our model is useful.
+
+```{r}
+p <- 10
+n <- nrow(nfl)
+
+summary(result)
+```
+
+
+**(e)** t-statistic for $x_7$: 1.02, with $x_7$ p-value 0.32355, we cannot reject the null hypothesis and can remove $x_7$ from the model.
+
+```{r}
+x7_tstat <- 0.1543533 / 0.1520695
+x7_tstat
+```
+
+
+**(f)** Residual plot seems to have similar vertical variation around 0, thus gives good result. All of the lags in ACF are below threshold, thus show residuals are uncorrelated. In QQ-plot, residuals seems to fall close to the line.
+
+```{r}
+f_result <- lm(y ~ x2 + x7 + x8, data = nfl)
+
+##storefittedy&residuals 
+yhat<-f_result$fitted.values 
+res<-f_result$residuals 
+
+##addtodataframe 
+Data <-data.frame(nfl,yhat,res)
+
+
+ggplot(Data,aes(x=yhat,y=res)) + 
+  geom_point()+ 
+  geom_hline(yintercept=0,color="red")+ 
+  labs(x="Fittedy", y="Residuals", title="ResidualPlot")
+
+acf(res, main="ACF Plot of Residuals with ystar")
+
+qqnorm(res) 
+qqline(res, col="red")
+```
+
+
+**(g)** No. The t-test of multiple linear regression does not necessarily measure linearity. In order to assess if $x_1$ is linearly related to the response variable, we should do simple linear regression on $y$ ~ $x_1$.
+
+```{r}
+result2 <- lm(y~x2+x7+x8+x1, data = nfl)
+summary(result2)
+```
+

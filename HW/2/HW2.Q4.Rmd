@@ -1,0 +1,80 @@
+---
+title: "HW2.Q4.Ko"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+library(tidyverse)
+library(datasets)
+```
+
+## 4
+
+```{r cars}
+?swiss
+head(swiss,5)
+```
+
+**(a)**
+(i) Examination and Education are seem to be linearly related to the fertility measure.
+
+(ii) (Agriculture ~ Examination), (Agriculture ~ Education), (Examination ~ Education) are seem to be highly correlated.
+
+```{r}
+pairs(swiss, lower.panel = NULL)
+
+cor(swiss)
+```
+
+
+**(b)**
+
+(i)
+
+$H_0: \beta_{agriculture} = \beta_{examination} = \beta_{education} = \beta_{catholic} = \beta_{infant.mortlaity} = 0$
+$H_a$: at least one of the $\beta_j \neq 0$ for j = $1, ... ,5$
+
+- F-statistic: 19.8
+- p-value: 0.000000000559
+
+With small p-value, we can reject the null hypothesis and claim that our model is useful.
+
+(ii)
+In terms of Examination, the negative linear relationship can also be found in the form of the slope -0.2580.
+In terms of Education, the negative linear relationship can also be found in the form of the slope -0.8709.
+Both results are in line with answer from previous question.
+
+```{r}
+result <- lm(Fertility ~ ., data = swiss)
+summary(result)
+
+ggplot(swiss, aes(x=Examination, y = Fertility)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) 
+
+ggplot(swiss, aes(x=Education, y = Fertility)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)  
+```
+
+
+**(c)**
+$H_0:\beta_{Education} = \beta_{Catholic} = \beta_{Infant.Mortality} = 0$
+$H_a:$ at least one of the coefficients in $H_0$ is not 0.
+
+- F-statistic: 3.09
+- p-value: 0.056
+
+As p-value = 0.056 > 0.05, we fail to reject the null hypothesis, so we can drop these three predictors from our model and select the reduced model.
+
+```{r}
+reduced <- lm(Fertility ~ Education + Catholic + Infant.Mortality, data = swiss)
+anova(reduced, result)
+
+nominator <- (2422 - 2105) / 2 
+denominator <- 2105 / 41
+f_statistic <- nominator / denominator
+f_statistic
+```
