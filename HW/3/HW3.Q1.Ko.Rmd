@@ -1,0 +1,102 @@
+---
+title: "HW3.Q1.Ko"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+library(tidyverse)
+library(palmerpenguins)
+library(dplyr)
+library(lawstat)
+```
+
+
+```{r}
+head(penguins,5)
+```
+
+
+## 1
+
+**(a)** I don't see particualr linear relationship in this plot. Points are clustered into two groups.
+
+```{r}
+ggplot(penguins, aes(x = bill_depth_mm, y = body_mass_g)) +
+  geom_point()
+```
+
+
+**(b)** By looking at the regression line across species, body mass is proportional to bill depth.
+
+```{r}
+ggplot(penguins, aes(x = bill_depth_mm, y = body_mass_g, color = species)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+**(c)** $y = -283.3 + 217.2*x_1 + 247.1*I_1 - 175.7*I_2 - 12.5*x_1*I_1 + 152.3*x_1*I_2 + \epsilon$
+
+```{r}
+# slope of bill depth and specieschinstrap are not that different
+
+contrasts(penguins$species)
+
+result <- lm(body_mass_g ~ bill_depth_mm * species, data = penguins)
+summary(result)
+```
+
+
+**(d)** 
+$H_0: x_1*I_1 = x_1*I_2 = 0$
+$H_a:$ at least one of the coefficients in $H_0$ is not zero.
+
+As p-value < 0.05, we can reject the null hypothesis and go on with interaction term model.
+
+```{r}
+# One slope is different (gentoo)
+reduced <- lm(body_mass_g ~ bill_depth_mm + species, data = penguins)
+
+anova(reduced, result)
+```
+
+
+**(e)** 
+$y = -283.3 + 217.2*x_1 + 247.1*I_1 - 175.7*I_2 - 12.5*x_1*I_1 + 152.3*x_1*I_2 + \epsilon$
+
+- Adelie: $\hat{y} = -283.3 + 217.2x_1 + 247.1(0) -175.7(0) -12.5(0)x_1 + 152.3(0)x_1 = -283.3 + 217.2x_1$
+- Chinstrap: $\hat{y} = -283.3 + 217.2x_1 + 247.1(1) -175.7(0) -12.5(1)x_1 + 152.3(0)x_1 = -36.2 + 204.7x_1$
+- Gentoo: $\hat{y} = -283.3 + 217.2x_1 + 247.1(0) -175.7(1) -12.5(0)x_1 + 152.3(1)x_1 = -459 + 369.5x_1$
+
+
+**(f)** According to the boxplot, the spread of body mass appears to be similar across penguins. The null hypothesis for Levene’s test is that the variances are equal across all classes of the categorical predictor. Since the p-value is high, we do not have evidence that this assumption is not met. According to the residual plot, the residuals are evenly scattered across the horizontal axis, and the variance of residuals are constant.
+
+```{r}
+# the variance of the response variable is constant across all levels of the categorical predictor
+ggplot(penguins, aes(x = species, y = body_mass_g)) + 
+  geom_boxplot() + 
+  labs(title="Body Mass in grams by Region")
+
+# The null hypothesis for Levene’s test is that the variances are equal across all classes of the categorical predictor. Since the p-value is high, we do not have evidence that this assumption is not met.
+levene.test(penguins$body_mass_g, penguins$species)
+
+penguins <- penguins[complete.cases(penguins), ]
+result <- lm(body_mass_g ~ bill_depth_mm * species, data = penguins)
+
+##storefittedy&residuals
+yhat<-result$fitted.values 
+res<-result$residuals ##addtodataframe 
+Data <-data.frame(penguins,yhat,res) 
+
+ggplot(Data, aes(x=yhat,y=res))+ geom_point()+ geom_hline(yintercept=0,color="red")+ labs(x="Fittedy",y="Residuals",title="ResidualPlot")
+```
+
+
+**(g)** 
+
+```{r}
+
+```
+
+

@@ -12,17 +12,17 @@ library(dplyr)
 
 
 
-```{r cars}
+```{r cars, echo=FALSE}
 options(scipen = 100, digits = 2) # NO e
 diamonds <- read.csv("diamonds4.csv")
 head(diamonds, 5)
 ```
 
-```{r}
+```{r, echo=FALSE}
 sum(is.na(diamonds))
 ```
 
-```{r}
+```{r, echo=FALSE}
 # quantile(diamonds$price, c(0.25, 0.5, 0.75)) 724 / 1464 / 4641
 
 diamonds <- diamonds %>% mutate(price_group = 
@@ -61,7 +61,7 @@ head(diamonds,5)
 
 To start with, let's look at the number of diamonds across all clarity groups. Clarity groups are ordered in terms of their values in descending order. As we predicted, lower clarity diamonds are more prevalent in this data.
 
-```{r}
+```{r, echo=FALSE}
 ggplot(diamonds, aes(x=clarity_group)) +
   geom_bar(fill = "blue") +
   labs(title = "Number of Diamonds across Clarity Groups", x = "Clarity Group", y = "Count") +
@@ -72,7 +72,7 @@ ggplot(diamonds, aes(x=clarity_group)) +
 
 Now, let's take a look at the boxplot of clarity group associated with price. FL, the one with highest clarity overall had higher median prices. What's interesting is that data points with high prices were found in VVS and VS group, not from IF groups. Although IF group is presumed to have higher prices than rest of the groups, turns out that VVS and VS groups had higher prices. However, it is hasty to judge that clarity is not a determining factor of price. We will delve into this more.
 
-```{r}
+```{r, echo=FALSE}
 ggplot(diamonds, aes(x= clarity_group, y = price)) +
   geom_boxplot() +
   scale_x_discrete(limits = c("FL", "IF", "VVS", "VS", "SI")) +
@@ -86,7 +86,7 @@ ggplot(reduced_diamonds, aes(x= clarity_group, y = price)) +
 
 In order to take a closer look on numerical data, we group by clarity and check mean and median values. Due to outliers, across all groups, there are large discrepancies between mean and median prices. When it comes to median price, FL had the highest median price, then VS, SI, IF, and VVS. However, as we have only 3 observations  and huge standard deviation on FL group, it is difficult to definitely trust the result of mean and median price of FL group as it is. When we use summarize function on reduced dataset with price < 50,000, FL had the highest median price, then VS, SI, IF, and VVS, same result. In short, from these summarized datframes, we can deduce **higher clarity does not necessarily guarantee higher median price.**
 
-```{r}
+```{r, echo=FALSE}
 diamonds %>% group_by(clarity_group) %>%
   summarize(count = n(), mean_price = mean(price), median_price = median(price), sd = sd(price))
 
@@ -105,7 +105,7 @@ While in reduced diamond dataset (price < 50,000), high-priced diamonds are not 
 Therefore, from the plotting of this dataset, **it is hard to conclude that clarity is highly correlated with price.** 
 This is because, first, most of the data are in three clarity groups (VVS, VS, SI), so lack of data on higher price groups makes it hard to generalize our analysis on clarity. Secondly, the vast majority of pricy diamonds are high-carat diamonds, regardless of clarity. In order to figure out linear relationship between clarity and price, additional single linear regression analysis should be followed.
 
-```{r}
+```{r, echo=FALSE}
 ggplot(diamonds, aes(x= clarity_group, y = price, colour = carat)) +
   geom_point() +
   scale_x_discrete(limits = c("FL", "IF", "VVS", "VS", "SI")) +
@@ -124,7 +124,7 @@ ggplot(reduced_diamonds, aes(x= clarity_group, y = price, colour = carat)) +
 
 Similarly, let's first check out the overall distribution of color of diamonds. Slightly different but, each one of color is well-distributed and when we divde into two groups, colorless(D,E,F) and near-colorless(G,H,I,J), they have almost the same number of counts.
 
-```{r}
+```{r, echo=FALSE}
 ggplot(diamonds, aes(x=color)) +
   geom_bar(fill = "blue") +
   labs(title = "Number of Diamonds across Colors", x = "Colors", y = "Count") 
@@ -137,7 +137,7 @@ ggplot(diamonds, aes(x=color_group)) +
 
 In this boxplot, it seems that price matches the high value of orders in colors (alphebatical order form D to J). After we divide colors into two subgroups(colorless & near-colorless) and look at the boxplot, overall height of two boxes are similar, but when it comes to outlier points, colorless group had observations with slightly higher prices. 
 
-```{r}
+```{r, echo=FALSE}
 ggplot(diamonds, aes(x= color, y = price)) +
   geom_boxplot() +
   labs(x = "Colors", y = "Price", title = "A boxplot of Price Across Colors")
@@ -149,7 +149,7 @@ ggplot(diamonds, aes(x= color_group, y = price)) +
 
 Now, in order to eliminate the effects of outliers, let's work on reduced-price dataset with price < $50,000. From below two boxplots, overall vertical spread seems to be similar.
 
-```{r}
+```{r, echo=FALSE}
 ggplot(reduced_diamonds, aes(x= color, y = price)) +
   geom_boxplot() +
   labs(x = "Colors", y = "Price", title = "A boxplot of Price < 50000 Across Colors")
@@ -164,7 +164,7 @@ However, as the boxplot does not provide good information on median values, we u
 
 For color groups (colorless ~ near-colorless), on both full-priced datset and reduced dataset, **colorless diamonds were slightly more expensive than near-colorless diamonds, which is in line with claims made on the website.**
 
-```{r}
+```{r, echo=FALSE}
 diamonds %>% group_by(color_group) %>%
   summarize(count = n(), mean_price = mean(price), median_price = median(price), sd = sd(price))
 
@@ -174,7 +174,7 @@ reduced_diamonds %>% group_by(color_group) %>%
 
 For colors (D ~ J), the intersting result is that **the lowest color grade, J, tends to have the highest median price both on full-priced datset and reduced dataset, which is counterintuitive and objects the claims made on the website: Diamond prices decline or increase in alphabetical order.** However, this observation cannot necessarily lead to the claim that 'color is not a determining factor of diamond price as the diamonds wit the lowest color grade J, had the highest median price.'  
 
-```{r}
+```{r, echo=FALSE}
 diamonds %>% group_by(color) %>%
   summarize(count = n(), mean_price = mean(price), median_price = median(price), sd = sd(price))
 
@@ -185,7 +185,7 @@ reduced_diamonds %>% group_by(color) %>%
 
 When we also take into account median carat to two groups, there is no significant difference between both in mean carat and median price between two groups, but colorless diamonds are both higher in median carats and median price than near-colorless diamonds. However, if we surely want to verify the median difference of crat between colorless group and non-colorless group, additional simple t-test between two groups should be implemented. 
 
-```{r}
+```{r, echo=FALSE}
 b <- diamonds %>% group_by(color_group) %>%
   summarize(median_carat = median(carat), median_price = median(price))
 b
@@ -197,7 +197,7 @@ ggplot(b, aes(x=color_group, y = median_price, fill = median_carat)) +
 
 When we look at the barplot below, across all colors, median prices from all colors are different due to different median carats. In order to verify the claim that 'diamond prices decline or increase in alphabetical order', we need to compare multiple diamonds with all of other factors being equal but different colors. However, in this dataset, we cannot find observations that satisfy the requiremnts. To sum up, in terms of color, diamonds with color 'J' has the highest median price but this is because it also has the highest median carat compared to other diamonds with different colors.
 
-```{r}
+```{r, echo=FALSE}
 a <- diamonds %>% group_by(color) %>%
   summarize(median_carat = median(carat), median_price = median(price))
 
@@ -205,6 +205,8 @@ ggplot(a, aes(x=color, y = median_price, fill = median_carat)) +
   geom_bar(stat="identity", position = "dodge") +
   scale_fill_gradient(low = "yellow", high = "red") + 
   labs(x = "Color", y = "Median Price", title = "Median Price and Median Carat Across Colors")
+
+ggsave("color_bar.jpg")
 ```
 
 
@@ -215,7 +217,7 @@ To sum up, we can observe that in terms of diamond color groups (colorless & nea
 
 Most diamonds are found to be ideal and very good in terms of cut.
 
-```{r}
+```{r, echo=FALSE}
 ggplot(diamonds, aes(x=cut)) +
   geom_bar(fill = "blue") +
   labs(title = "Number of Diamonds across Colors", x = "Cuts", y = "Count") +
@@ -226,7 +228,7 @@ ggplot(diamonds, aes(x=cut)) +
 ## Overal spread of cut
 
 : The top three expensive diamonds are turned out to be from ideal and very good cut, not from astor ideal cut.
-```{r}
+```{r, echo=FALSE}
 ggplot(diamonds, aes(x= cut, y = price)) +
   geom_boxplot()
 
@@ -237,7 +239,7 @@ ggplot(reduced_diamonds, aes(x= cut, y = price)) +
 
 
 When we take a look at both full-price and reduced-prcie diamond dataset, Astor Ideal has the highest median price, then good, very good, and ideal. 
-```{r}
+```{r, echo=FALSE}
 diamonds %>% group_by(cut) %>%
   summarize(count = n(), mean_price = mean(price), median_price = median(price), sd = sd(price))
 
@@ -248,7 +250,7 @@ reduced_diamonds %>% group_by(cut) %>%
 
  This barplot does not 100 % jibe with the claim made in the website: **" In reality, it’s the cut of the diamond that can be the biggest factor in the price tag. The Ideal cut diamond, and the super-ideal Astor by Blue Nile™, are the most expensive diamond cuts because they optimize light performance and create the most impressive sparkle."** Similar to the graph found in 'color' section, most of pricy diamonds are found to be higher in carats. Therfore, in order to identify linear relationsihp between cuts and prices, additional simple linear regression should be implemented.
 
-```{r}
+```{r, echo=FALSE}
 c <- diamonds %>% group_by(cut) %>%
   summarize(median_carat = median(carat), median_price = median(price))
 

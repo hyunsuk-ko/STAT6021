@@ -1,0 +1,80 @@
+---
+title: "HW3.Q1.Ko"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+library(tidyverse)
+library(palmerpenguins)
+library(dplyr)
+```
+
+```{r}
+head(penguins,5)
+```
+
+
+## 1
+
+**(a)** I don't see particualr linear relationship in this plot. Points are clustered into two groups.
+
+```{r}
+ggplot(penguins, aes(x = bill_depth_mm, y = body_mass_g)) +
+  geom_point()
+```
+
+
+**(b)** By looking at the regression line across species, body mass is proportional to bill depth.
+
+```{r}
+ggplot(penguins, aes(x = bill_depth_mm, y = body_mass_g, color = species)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+**(c)** $y = -283.3 + 217.2*x_1 + 247.1*I_1 - 175.7*I_2 - 12.5*x_1*I_1 + 152.3*x_1*I_2 + \epsilon$
+
+```{r}
+contrasts(penguins$species)
+
+result <- lm(body_mass_g ~ bill_depth_mm * species, data = penguins)
+summary(result)
+```
+
+
+**(d)** 
+$H_0: x_1*I_1 = x_1*I_2 = 0$
+$H_a:$ at least one of the coefficients in $H_0$ is not zero.
+
+As p-value < 0.05, we can reject the null hypothesis and go on with interaction term model.
+
+```{r}
+reduced <- lm(body_mass_g ~ bill_depth_mm + species, data = penguins)
+
+anova(reduced, result)
+```
+
+
+**(e)** 
+
+```{r}
+
+```
+
+
+**(f)** 
+
+```{r}
+
+```
+
+
+**(g)** 
+
+```{r}
+
+```
+
+
