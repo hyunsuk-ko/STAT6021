@@ -1,0 +1,36 @@
+---
+title: "HW3.Q2.Ko"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+library(tidyverse)
+library(MASS)
+library(dplyr)
+```
+
+## 2
+
+```{r}
+data <- birthwt %>%
+  mutate(cat_race = case_when(
+    race == 1 ~ "white",
+    race == 2  ~ "black",
+    race == 3  ~ "ohters"
+  ))
+
+
+head(data)
+```
+
+**Answer:** As the slopes for all races are not parallel, there appears to be an interaction between race and age; the impact of age on the weight of baby differs among mother's race.
+
+```{r}
+ggplot(data, aes(x= age, y = bwt, color = cat_race)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+

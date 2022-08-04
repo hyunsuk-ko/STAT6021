@@ -1,0 +1,67 @@
+---
+title: "HW3.Q3.Ko"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+library(tidyverse)
+library(dplyr)
+library(leaps)
+```
+
+```{r cars}
+nfl <- read.table('nfl.txt', header = TRUE)
+head(nfl)
+```
+
+## 3
+
+**(a)**
+
+```{r}
+allreg <- regsubsets(y ~ ., data = nfl, nbest=2)
+
+coef(allreg, which.max(summary(allreg)$adjr2))
+coef(allreg, which.min(summary(allreg)$cp))
+coef(allreg, which.min(summary(allreg)$bic))
+```
+
+
+**(b)** As the result of 5th step gives the lowest AIC = 34, we would choose this model.
+
+$\hat{y} = -0.00401x_8 + 0.00382x_2 + 0.21689x_7 -0.00163x_9$
+
+```{r}
+regnull <- lm(y ~ 1, data = nfl)
+regfull <- lm(y ~ ., data = nfl)
+
+step(regnull, scope = list(lower = regnull, upper = regfull), direction = "forward")
+```
+
+
+**(c)**
+$\hat{y} = -1.82170 + 0.00382x_2 + 0.21689x_7 - 0.00401x_8 - 0.00163x_9$
+
+```{r}
+step(regfull, scope = list(lower = regnull, upper = regfull), direction = "backward")
+```
+
+
+**(d)**
+$\hat{y} = -1.82170 - 0.00401x_2 + 0.21689x_7 - 0.00401x_8 - 0.00163x_9$
+
+```{r}
+step(regnull, scope = list(lower = regnull, upper = regfull), direction = "both")
+```
+
+
+**(e)**
+
+```{r}
+
+```
+
+
+**(f)** easier to calculate ei / 1 - hi

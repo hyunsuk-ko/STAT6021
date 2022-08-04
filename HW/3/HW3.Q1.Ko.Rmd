@@ -93,10 +93,7 @@ ggplot(Data, aes(x=yhat,y=res))+ geom_point()+ geom_hline(yintercept=0,color="re
 ```
 
 
-**(g)** 
+**(g)** From (d), we reject the reduced model and go on with model with interaction terms. However, when conducting multiple comparsions, we are assuming that interaction terms do not exisit within our model. Therefore, we cannot conduct multiple comparsions.
 
-```{r}
-
-```
 
 
